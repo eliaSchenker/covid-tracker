@@ -38,17 +38,10 @@ class APILoader:
                 self.data.append(
                     Country(rows[headers["location"]], rows[headers["continent"]], rows[headers["iso_code"]]))
             country = self.data[len(self.data) - 1]
-            country.addEntry(DailyEntry(rows[headers["date"]],
-                                        rows[headers["population"]],
-                                        rows[headers["life_expectancy"]],
-                                        rows[headers["new_cases"]],
-                                        rows[headers["new_deaths"]],
-                                        rows[headers["new_vaccinations"]],
-                                        rows[headers["new_cases_per_million"]],
-                                        rows[headers["new_deaths_per_million"]],
-                                        rows[headers["total_cases"]],
-                                        rows[headers["total_deaths"]],
-                                        rows[headers["total_vaccinations"]]))
+            result = {}
+            for j in range(len(rows)):
+                result.update({firstrow[j]: rows[j]})
+            country.addEntry(DailyEntry(result))
         self.data.reverse()
         print(self.data[0].name)
-        print(self.data[0].entries[0].new_cases)
+        print(self.data[0].entries[0].entry["new_cases"])
