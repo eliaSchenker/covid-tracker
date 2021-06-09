@@ -5,16 +5,13 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5 import QtWidgets
 
 from APILoader import APILoader
+from MenuGUI import MenuGUI
 from StatisticGUI import StatisticGUI
 
-loader = APILoader()
-loader.load()
 
 app = QtWidgets.QApplication(sys.argv)
 
-main = StatisticGUI()
-main.setStats(loader.data)
-main.updateGraph()
+menuGUI = MenuGUI()
+menuGUI.show()
 
-main.show()
 sys.exit(app.exec_())
