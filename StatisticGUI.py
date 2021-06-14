@@ -2,7 +2,6 @@ from random import randint
 
 import pyqtgraph as pg
 from PyQt5.QtWidgets import *
-from PyQt5.uic.properties import QtGui
 
 
 class StatisticGUI(QMainWindow):
@@ -12,6 +11,8 @@ class StatisticGUI(QMainWindow):
         self.graphWidget.setMenuEnabled(False)
         self.graphWidget.setBackground('w')
         self.graphWidget.addLegend()
+
+        self.dropdownValues = ["new_cases", "new_cases_per_million", "new_deaths", "new_deaths_per_million"]
 
         self.countrySelection = QListWidget()
         self.countrySelection.itemSelectionChanged.connect(self.updateGraph)
@@ -31,9 +32,11 @@ class StatisticGUI(QMainWindow):
 
         selectAllButton = QPushButton("Alles selektieren")
         deselectAllButton = QPushButton("Nichts selektieren")
+        exportDataButton = QPushButton("Daten exportieren")
 
         selectAllButton.clicked.connect(self.countrySelection.selectAll)
         deselectAllButton.clicked.connect(self.countrySelection.clearSelection)
+        exportDataButton.clicked.connect(self.saveData)
 
         mainWidget = QWidget()
         controlWidget = QWidget()
@@ -48,6 +51,7 @@ class StatisticGUI(QMainWindow):
         controlWidgetLayout.addWidget(self.countrySelection)
         controlWidgetLayout.addWidget(selectAllButton)
         controlWidgetLayout.addWidget(deselectAllButton)
+        controlWidgetLayout.addWidget(exportDataButton)
 
         controlWidget.setLayout(controlWidgetLayout)
 
@@ -62,27 +66,61 @@ class StatisticGUI(QMainWindow):
         for i in data:
             self.countrySelection.addItem(i.name)
 
-    def updateGraph(self):
-        self.graphWidget.clear()
+    def saveData(self):
+        path = QFileDialog.getSaveFileName(self, 'Export Data', 'data.csv', '.csv')
+        file = open(path[0], 'w')
+        if path != ('', ''):
+            selectedIndexes = self.getSelectedIndexes()
+            export = ""
+            exportheaders = ""
+            headerkeys = list(self.data[0].entries[0].entry)
+            for i in range(len(headerkeys)):
+                if i == len(headerkeys) - 1:
+                    exportheaders += headerkeys[i]
+                else:
+                    exportheaders += headerkeys[i] + ", "
+
+            for i in range(len(self.data)):
+                if i in selectedIndexes:
+                    for j in self.data[i].entries:
+                        entries = list(j.entry.values())
+                        for k in range(len(entries)):
+                            if k == len(entries) - 1:
+                                export += entries[k] + "\n"
+                            else:
+                                export += entries[k] + ", "
+
+            file.write(exportheaders + "\n" + export)
+            file.close()
+
+    def getSelectedIndexes(self):
         selectedIndexes = []
-
-        dropdownValues = ["new_cases", "new_cases_per_million", "new_deaths", "new_deaths_per_million"]
-
         for i in self.countrySelection.selectedIndexes():
             selectedIndexes.append(i.row())
+        return selectedIndexes
+
+    def updateGraph(self):
+        self.graphWidget.clear()
+
+        selectedIndexes = self.getSelectedIndexes()
+
         for i in range(len(self.data)):
             if i in selectedIndexes:
-                tempInfections = []
+                tempData = []
                 tempDates = []
                 count = 0
                 for j in self.data[i].entries:
-                    entryValue = j.entry[dropdownValues[self.displayBox.currentIndex()]]
-                    if entryValue != '' and entryValue != 0:
-                        tempInfections.append(float(entryValue))
+                    entryValue = j.entry[self.dropdownValues[self.displayBox.currentIndex()]]
+
+                    if entryValue != '' and entryValue != "0.0":
+                        tempData.append(float(entryValue))
+                        if float(entryValue) < 10:
+                            print(entryValue)
                         tempDates.append(count)
                     count += 1
-                self.drawStats(tempDates, tempInfections, self.data[i].name)
+                self.drawStats(tempDates, tempData, self.data[i].name)
+        self.graphWidget.autoRange()
 
     def drawStats(self, dates, infections, countryname):
-        self.graphWidget.plot(dates, infections, pen=pg.mkPen(color=(randint(0, 255), randint(0, 255), randint(0, 255)), width=1), name=countryname)
-
+        self.graphWidget.plot(dates, infections, pen=pg.mkPen(color=(randint(0, 200), randint(0, 200), randint(0, 200)),
+                                                              width=1), name=countryname)

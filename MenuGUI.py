@@ -30,5 +30,5 @@ class MenuGUI(QMainWindow):
         mainWidget.setLayout(layout)
         self.setCentralWidget(mainWidget)
     def showStatistic(self):
-        self.main.show()
+        self.main.showMaximized()
 

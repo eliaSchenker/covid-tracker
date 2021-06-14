@@ -15,9 +15,7 @@ class APILoader:
         f = urllib.request.urlopen(link)
         downloaded = f.read().decode('utf-8')
         # downloaded = downloaded.replace("\n", "¦")
-        print(len(downloaded))
         temp = str(downloaded).splitlines()
-        print(len(temp))
         firstrow = temp[0].split(",")
         maindata = temp[1:len(temp)]
         maindata.reverse()
@@ -28,8 +26,6 @@ class APILoader:
 
         for i in range(len(firstrow)):
             headers.update({firstrow[i]: int(i)})
-
-        print(headers)
 
         for i in maindata:
             rows = i.split(",")
@@ -42,6 +38,11 @@ class APILoader:
             for j in range(len(rows)):
                 result.update({firstrow[j]: rows[j]})
             country.addEntry(DailyEntry(result))
+        ignoreLocations = ["World", "Asia", "Africa", "Europe", "European Union", "North America", "South America", "Oceania", "International"]
+        i = 0
+        while i < len(self.data):
+            if self.data[i].name in ignoreLocations:
+                self.data.pop(i)
+            else:
+                i += 1
         self.data.reverse()
-        print(self.data[0].name)
-        print(self.data[0].entries[0].entry["new_cases"])
