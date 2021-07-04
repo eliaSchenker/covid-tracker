@@ -41,8 +41,9 @@ class APILoader:
         ignoreLocations = ["World", "Asia", "Africa", "Europe", "European Union", "North America", "South America", "Oceania", "International"]
         i = 0
         while i < len(self.data):
-            if self.data[i].name in ignoreLocations:
+            if self.data[i].name in ignoreLocations or len(self.data[i].entries) < 100:
                 self.data.pop(i)
             else:
                 i += 1
         self.data.reverse()
+        print(headers)

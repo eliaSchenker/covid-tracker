@@ -1,18 +1,35 @@
+import time
+from datetime import datetime
 from random import randint
 
 import pyqtgraph as pg
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
+from pyqtgraph import LabelItem
+
+from PyQtGraphUtils import TimeAxisItem
 
 
 class StatisticGUI(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(StatisticGUI, self).__init__(*args, **kwargs)
-        self.graphWidget = pg.PlotWidget()
+        self.graphWidget = pg.PlotWidget(
+            title="Covid-19 Data",
+            labels= {'left': "Neue Infektionen"},
+            axisItems={'bottom': TimeAxisItem(orientation='bottom')}
+        )
+
+        sshFile = "style.stylesheet"
+        with open(sshFile, "r") as fh:
+            self.setStyleSheet(fh.read())
+
+        self.setWindowIcon(QIcon('icon.png'))
+        self.setWindowTitle("Statistic")
         self.graphWidget.setMenuEnabled(False)
         self.graphWidget.setBackground('w')
         self.graphWidget.addLegend()
 
-        self.dropdownValues = ["new_cases", "new_cases_per_million", "new_deaths", "new_deaths_per_million"]
+        self.dropdownValues = ["new_cases", "new_cases_per_million", "total_cases", "new_deaths", "new_deaths_per_million", "total_deaths"]
 
         self.countrySelection = QListWidget()
         self.countrySelection.itemSelectionChanged.connect(self.updateGraph)
@@ -20,13 +37,15 @@ class StatisticGUI(QMainWindow):
 
         self.sortBox = QComboBox()
         self.sortBox.addItem("Name")
-        self.sortBox.addItem("Infektionen Gesamt")
+        self.sortBox.addItem("Höchster Wert")
 
         self.displayBox = QComboBox()
         self.displayBox.addItem("Neue Infektionen")
         self.displayBox.addItem("Neue Infektionen pro Million")
+        self.displayBox.addItem("Totale Infektionen")
         self.displayBox.addItem("Neue Tode")
         self.displayBox.addItem("Neue Tode pro Million")
+        self.displayBox.addItem("Totale Tode")
 
         self.displayBox.currentIndexChanged.connect(self.updateGraph)
 
@@ -37,6 +56,10 @@ class StatisticGUI(QMainWindow):
         selectAllButton.clicked.connect(self.countrySelection.selectAll)
         deselectAllButton.clicked.connect(self.countrySelection.clearSelection)
         exportDataButton.clicked.connect(self.saveData)
+
+        selectAllButton.setStyleSheet("border-radius:10px;background-color:gray")
+
+        selectAllButton.setStyleSheet("")
 
         mainWidget = QWidget()
         controlWidget = QWidget()
@@ -101,7 +124,7 @@ class StatisticGUI(QMainWindow):
 
     def updateGraph(self):
         self.graphWidget.clear()
-
+        self.graphWidget.setLabel('left', self.displayBox.currentText())
         selectedIndexes = self.getSelectedIndexes()
 
         for i in range(len(self.data)):
@@ -112,11 +135,10 @@ class StatisticGUI(QMainWindow):
                 for j in self.data[i].entries:
                     entryValue = j.entry[self.dropdownValues[self.displayBox.currentIndex()]]
 
-                    if entryValue != '' and entryValue != "0.0":
+                    if entryValue != '' and entryValue != "0.0" and float(entryValue) > 0:
                         tempData.append(float(entryValue))
-                        if float(entryValue) < 10:
-                            print(entryValue)
-                        tempDates.append(count)
+                        tempDates.append(int(time.mktime(
+                            datetime.strptime(j.entry["date"] + " 00:00:00", "%Y-%m-%d %H:%M:%S").timetuple())))
                     count += 1
                 self.drawStats(tempDates, tempData, self.data[i].name)
         self.graphWidget.autoRange()

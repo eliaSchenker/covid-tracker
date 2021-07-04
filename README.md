@@ -9,6 +9,8 @@ Um die Applikation zu installieren muss das Repository geklont werden. Ebenfalls
 
 > pip install requests
 
+>pip install PyQtWebEngine
+
 Um das Programm auszuführen muss die Skript app.py gestartet werden.
 
 Dieses Projekt ist in Arbeit. Es wird ständig geupdated und neue Elemente (unter anderem die Statistik) werden bald hinzugefügt.
