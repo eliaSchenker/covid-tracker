@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 from datetime import datetime
 from random import randint
@@ -18,18 +20,17 @@ class StatisticGUI(QMainWindow):
             labels= {'left': "Neue Infektionen"},
             axisItems={'bottom': TimeAxisItem(orientation='bottom')}
         )
-
-        sshFile = "style.stylesheet"
+        sshFile = self.resource_path('style.stylesheet')
         with open(sshFile, "r") as fh:
             self.setStyleSheet(fh.read())
 
-        self.setWindowIcon(QIcon('icon.png'))
+        self.setWindowIcon(QIcon(self.resource_path('icon.ico')))
         self.setWindowTitle("Statistic")
         self.graphWidget.setMenuEnabled(False)
         self.graphWidget.setBackground('w')
         self.graphWidget.addLegend()
 
-        self.dropdownValues = ["new_cases", "new_cases_per_million", "total_cases", "new_deaths", "new_deaths_per_million", "total_deaths"]
+        self.dropdownValues = ["new_cases", "new_cases_per_million", "total_cases", "new_deaths", "new_deaths_per_million", "total_deaths", "new_vaccinations", "total_vaccinations"]
 
         self.countrySelection = QListWidget()
         self.countrySelection.itemSelectionChanged.connect(self.updateGraph)
@@ -46,6 +47,8 @@ class StatisticGUI(QMainWindow):
         self.displayBox.addItem("Neue Tode")
         self.displayBox.addItem("Neue Tode pro Million")
         self.displayBox.addItem("Totale Tode")
+        self.displayBox.addItem("Neue Impfungen")
+        self.displayBox.addItem("Totale Impfungen")
 
         self.displayBox.currentIndexChanged.connect(self.updateGraph)
 
@@ -82,6 +85,11 @@ class StatisticGUI(QMainWindow):
         layout.addWidget(controlWidget, 0, 1)
         mainWidget.setLayout(layout)
         self.setCentralWidget(mainWidget)
+
+    def resource_path(self, relative_path):
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath('.'), relative_path)
 
     def setStats(self, data):
         self.data = data

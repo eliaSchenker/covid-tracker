@@ -1,3 +1,6 @@
+import os
+import sys
+
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 
@@ -14,10 +17,21 @@ class MenuGUI(QMainWindow):
 
         layout = QVBoxLayout()
 
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setWindowTitle("Bitte warten...")
+        msg.setText("Neue Daten werden heruntergeladen. Bitte warten...")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec()
+
+
         loader = APILoader()
         loader.load()
 
-        self.setWindowIcon(QIcon('icon.png'))
+        msg.close()
+
+        self.setWindowIcon(QIcon(self.resource_path('icon.ico')))
         self.setWindowTitle("Covid Tracker")
         self.main = StatisticGUI()
         self.main.setStats(loader.data)
@@ -41,6 +55,11 @@ class MenuGUI(QMainWindow):
 
         mainWidget.setLayout(layout)
         self.setCentralWidget(mainWidget)
+
+    def resource_path(self, relative_path):
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath('.'), relative_path)
     def showStatistic(self):
         self.main.showMaximized()
     def showWorldMap(self):

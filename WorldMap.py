@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import types
@@ -14,14 +15,15 @@ from PyQt5.QtWidgets import *
 
 class WorldMap(QMainWindow):
     def __init__(self, *args, **kwargs):
+
         super(WorldMap, self).__init__(*args, **kwargs)
         self.webEngineView = QWebEngineView()
         self.webEngineView.setStyleSheet("border: 5px solid #999999;")
         mainWidget = QWidget()
         self.setWindowTitle("World Map")
-        self.setWindowIcon(QIcon('icon.png'))
+        self.setWindowIcon(QIcon(self.resource_path('icon.ico')))
         self.dropdownValues = ["new_cases", "new_cases_per_million", "total_cases", "new_deaths",
-                               "new_deaths_per_million", "total_deaths"]
+                               "new_deaths_per_million", "total_deaths", "new_vaccinations", "total_vaccinations"]
 
         self.displayBox = QComboBox()
         self.displayBox.addItem("Neue Infektionen")
@@ -30,6 +32,8 @@ class WorldMap(QMainWindow):
         self.displayBox.addItem("Neue Tode")
         self.displayBox.addItem("Neue Tode pro Million")
         self.displayBox.addItem("Totale Tode")
+        self.displayBox.addItem("Neue Impfungen")
+        self.displayBox.addItem("Totale Impfungen")
         self.displayBox.currentIndexChanged.connect(self.loadWebView)
 
         self.timeSlider = QSlider(Qt.Horizontal)
@@ -75,8 +79,13 @@ class WorldMap(QMainWindow):
         mainWidgetLayout.addWidget(self.timeSliderTextWidget)
         self.setCentralWidget(mainWidget)
 
+    def resource_path(self, relative_path):
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.join(sys._MEIPASS, relative_path)
+        return os.path.join(os.path.abspath('.'), relative_path)
+
     def loadWebView(self):
-        with open('WorldMapTemplate.html', 'r') as f:
+        with open(self.resource_path('WorldMapTemplate.html'), 'r') as f:
             html = f.read()
         colorValues = ""
         dataValues = ""
