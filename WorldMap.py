@@ -85,6 +85,9 @@ class WorldMap(QMainWindow):
         return os.path.join(os.path.abspath('.'), relative_path)
 
     def loadWebView(self):
+        """
+        Ladet die Karte und zeigt sie an
+        """
         with open(self.resource_path('WorldMapTemplate.html'), 'r') as f:
             html = f.read()
         colorValues = ""
@@ -94,8 +97,10 @@ class WorldMap(QMainWindow):
         min = sys.maxsize
         max = 0
 
+        #Selektiert den momentanen Key des Dropdowns
         usedKey = self.dropdownValues[self.displayBox.currentIndex()]
 
+        #Generiert das Minimum und Maximum der Daten
         for i in range(len(self.data)):
             entry = self.entryFromDate(i)
             if entry is not None:
@@ -105,6 +110,7 @@ class WorldMap(QMainWindow):
                     if float(entry.entry[usedKey]) < min:
                         min = float(entry.entry[usedKey])
 
+        #Setzt die Variablen colorValues und DataValues (verantwortlich für die Farbe und die Zahlenanzeige auf der Weltkarte)
         for i in range(len(self.data)):
             entry = self.entryFromDate(i)
             if entry is not None:
@@ -115,6 +121,7 @@ class WorldMap(QMainWindow):
                 colorValues += "\"" + str(self.data[i].name) + "\" : \"" + str(color.name()) + "\","
                 dataValues += "\"" + str(self.data[i].name) + "\" : \"\\n" + entry.entry[usedKey] + "\","
 
+        #Setzen bestimmter Werte in dem template File (WorldMapTemplate.html)
         colorValues = colorValues[0:len(colorValues) - 1]
         dataValues = dataValues[0:len(dataValues) - 1]
         html = html.replace("COLORVALUES", colorValues)
@@ -127,6 +134,11 @@ class WorldMap(QMainWindow):
         self.webEngineView.setHtml(html)
 
     def entryFromDate(self, countryIndex):
+        """
+        Gibt ein Entry des momentan selektierten Tages von einem Land zurück
+        :param countryIndex: Index des Landes
+        :return: Entry des Tages
+        """
         entries = self.data[countryIndex].entries
         for i in entries:
             date = datetime.fromtimestamp(self.timeSlider.value())
@@ -136,6 +148,10 @@ class WorldMap(QMainWindow):
 
 
     def getMinimumDate(self):
+        """
+        Gibt das minimale Datum der Daten zurück (Anfangsdatum)
+        :return: Minimales Datum als timestamp
+        """
         minDate = sys.maxsize
         for i in self.data:
             date = datetime.timestamp(datetime.strptime(i.entries[-1].entry["date"], "%Y-%m-%d"))
@@ -144,6 +160,10 @@ class WorldMap(QMainWindow):
         return minDate
 
     def getMaximumDate(self):
+        """
+        Gibt das maximale Datum der Daten zurück (Enddatum)
+        :return: Maximales Datum als timestamp
+        """
         maxDate = 0
         for i in self.data:
             date = datetime.timestamp(datetime.strptime(i.entries[0].entry["date"], "%Y-%m-%d"))
@@ -152,23 +172,42 @@ class WorldMap(QMainWindow):
         return maxDate
 
     def setMinMaxSliderTexts(self):
-        self.timeSlider.setTickInterval(86400)  # Jump forward in the timeline by one day
-        self.timeSlider.setSingleStep(86400) #Jump forward in the timeline by one day
+        """
+        Setzt das Minimum und Maximum des Sliders
+        :return:
+        """
+        self.timeSlider.setTickInterval(86400)  #Einen Tag im Timestamp vorwärtsspringen
+        self.timeSlider.setSingleStep(86400) #Einen Tag im Timestamp vorwärtsspringen
+
+        #Minimal und Maximalwerte setzen
         self.timeSlider.setMinimum(self.getMinimumDate())
         self.timeSlider.setMaximum(self.getMaximumDate())
 
+        #Minimal und Maximaltext setzen
         self.timeSliderMinText.setText(datetime.strftime(datetime.fromtimestamp(self.timeSlider.minimum()), "%d-%m-%Y"))
         self.timeSliderMaxText.setText(datetime.strftime(datetime.fromtimestamp(self.timeSlider.maximum()), "%d-%m-%Y"))
 
-        print(datetime.fromtimestamp(self.timeSlider.minimum()))
-        print(datetime.fromtimestamp(self.timeSlider.maximum()))
-        print((self.timeSlider.maximum() - self.timeSlider.minimum()) / 86400)
-
+        #Value des Sliders auf heutiges Datum setzen
         self.timeSlider.setValue(self.timeSlider.maximum())
     def updateTitleText(self):
+        """
+        Aktualisiert den Titel text der Weltkarte auf das selektierte Datum
+        """
         self.title.setText("Weltkarte vom " + str(datetime.strftime(datetime.fromtimestamp(self.timeSlider.value()),
                                                                     "%d-%m-%Y")))
     def interpolateColors(self, a, b, t):
+        """
+        Interpoliert zwischen zwei Farben mit dem Faktor t (0 bis 1)
+        Beispiel:
+        a = (254, 254, 254)
+        b = (0, 0, 0)
+        t = 0.5
+        Ergebnis: (127, 127, 127)
+        :param a: Erste Farbe
+        :param b: Zweite Farbe
+        :param t: Faktor
+        :return: Neue Farbe
+        """
         return QColor(a.red() + (b.red() - a.red()) * t,
         a.green() + (b.green() - a.green()) * t,
         a.blue() + (b.blue() - a.blue()) * t,

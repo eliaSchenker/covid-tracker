@@ -17,6 +17,7 @@ class MenuGUI(QMainWindow):
 
         layout = QVBoxLayout()
 
+        # Hilfefenster anzeigen, welches das herunterladen der Daten anzeigt
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
 
@@ -29,10 +30,14 @@ class MenuGUI(QMainWindow):
         loader = APILoader()
         loader.load()
 
+        #Fenster schliessen, sobald das Laden beendet ist.
         msg.close()
 
+        #Fenster-Icon und Titel setzen
         self.setWindowIcon(QIcon(self.resource_path('icon.ico')))
         self.setWindowTitle("Covid Tracker")
+
+        #Daten setzen und Weltkarte vorbereiten
         self.main = StatisticGUI()
         self.main.setStats(loader.data)
         self.main.updateGraph()
@@ -42,6 +47,7 @@ class MenuGUI(QMainWindow):
         self.worldmap.setMinMaxSliderTexts()
         self.worldmap.loadWebView()
 
+        #GUI des Menüs erstellen
         title = QLabel("Covid Tracker")
         worldmapbutton = QPushButton("Weltkarte")
         worldmapbutton.clicked.connect(self.showWorldMap)
@@ -57,11 +63,22 @@ class MenuGUI(QMainWindow):
         self.setCentralWidget(mainWidget)
 
     def resource_path(self, relative_path):
+        """
+        Funktion zum umwandeln der Pfade in der Resourcen (z.B Icon) zu Pfaden, welche von dem .exe export verwendet werden
+        :param relative_path: Relativer Pfad (z.B icon.ico)
+        :return: Neuer Pfad
+        """
         if hasattr(sys, '_MEIPASS'):
             return os.path.join(sys._MEIPASS, relative_path)
         return os.path.join(os.path.abspath('.'), relative_path)
     def showStatistic(self):
+        """
+        Statistik anzeigen
+        """
         self.main.showMaximized()
     def showWorldMap(self):
+        """
+        Weltkarte anzeigen
+        """
         self.worldmap.showMaximized()
 

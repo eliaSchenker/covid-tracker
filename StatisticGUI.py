@@ -92,12 +92,20 @@ class StatisticGUI(QMainWindow):
         return os.path.join(os.path.abspath('.'), relative_path)
 
     def setStats(self, data):
+        """
+        Set the country selection menu with the data
+        :param data: data from the APILoader
+        """
         self.data = data
         self.countrySelection.clear()
         for i in data:
             self.countrySelection.addItem(i.name)
 
     def saveData(self):
+        """
+        Exports the data of the selected countries (and opens a save file dialog)
+        :return:
+        """
         path = QFileDialog.getSaveFileName(self, 'Export Data', 'data.csv', '.csv')
         file = open(path[0], 'w')
         if path != ('', ''):
@@ -125,12 +133,19 @@ class StatisticGUI(QMainWindow):
             file.close()
 
     def getSelectedIndexes(self):
+        """
+        Returns the selected indices of the country selection
+        :return: The indices
+        """
         selectedIndexes = []
         for i in self.countrySelection.selectedIndexes():
             selectedIndexes.append(i.row())
         return selectedIndexes
 
     def updateGraph(self):
+        """
+        Updates the graph
+        """
         self.graphWidget.clear()
         self.graphWidget.setLabel('left', self.displayBox.currentText())
         selectedIndexes = self.getSelectedIndexes()
@@ -151,6 +166,12 @@ class StatisticGUI(QMainWindow):
                 self.drawStats(tempDates, tempData, self.data[i].name)
         self.graphWidget.autoRange()
 
-    def drawStats(self, dates, infections, countryname):
-        self.graphWidget.plot(dates, infections, pen=pg.mkPen(color=(randint(0, 200), randint(0, 200), randint(0, 200)),
+    def drawStats(self, dates, data, countryname):
+        """
+        Draws a single line (a country) on the graph from data
+        :param dates: Dates of the data
+        :param data: The data
+        :param countryname: The name of the country
+        """
+        self.graphWidget.plot(dates, data, pen=pg.mkPen(color=(randint(0, 200), randint(0, 200), randint(0, 200)),
                                                               width=1), name=countryname)

@@ -10,6 +10,9 @@ class APILoader:
     data = []
 
     def load(self):
+        """
+        Ladet die Daten von der Github API herunter
+        """
         # Downloaden der ~22 MB Datei
         link = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv"
         f = urllib.request.urlopen(link)
